@@ -1,4 +1,4 @@
-name: Build and Push to Amazon ECR Public
+name: Terraform CI
 
 on:
   push:
@@ -6,31 +6,32 @@ on:
       - main
 
 permissions:
-  id-token: write       # Required for OIDC
-  contents: read        # Required for actions/checkout
+  id-token: write
+  contents: read
 
 jobs:
-  build-and-push:
+  terraform:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Configure AWS credentials via OIDC
-        uses: aws-actions/configure-aws-credentials@v2
+      - name: Configure AWS Credentials via OIDC                  
+        uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: arn:aws:iam::455715797789:role/openid
-          role-session-name: github-actions
           aws-region: us-east-1
 
-      - name: Login to Amazon ECR Public
-        id: login-ecr-public
-        uses: aws-actions/amazon-ecr-login@v1
-        with:
-          registry-type: public
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
 
-      - name: Build and Push Docker Image
-        run: |
-          docker build -t public.ecr.aws/ubuntu/ubuntu:latest .
-          docker push public.ecr.aws/ubuntu/ubuntu:latest
+      - name: Terraform Init
+        run: terraform init
+
+      - name: Terraform Plan
+        run: terraform plan
+
+      - name: Terraform Apply
+        if: github.ref == 'refs/heads/main'
+        run: terraform apply -auto-approve
