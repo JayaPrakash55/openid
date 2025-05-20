@@ -33,4 +33,4 @@ jobs:
       - name: Build and Push Docker Image
         run: |
           docker build -t public.ecr.aws/ubuntu/ubuntu:latest .
-          docker push public.ecr.aws/ubuntu/ubuntu-git:latest
+          docker push public.ecr.aws/ubuntu/ubuntu:latest
